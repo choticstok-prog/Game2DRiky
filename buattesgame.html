@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D FPS - Full 3D Zombie & Weapons (Brutal VIP Cheat)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            background-color: #111;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-wrapper {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            border: 4px solid #55ff55;
+            box-shadow: 0 10px 35px rgba(85, 255, 85, 0.35);
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            cursor: crosshair;
+        }
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+        }
+        #overlay h1 {
+            font-size: 38px;
+            margin: 0 0 10px;
+            color: #55ff55;
+            text-shadow: 0 0 15px rgba(85, 255, 85, 0.8);
+        }
+        #overlay p {
+            margin: 5px 0;
+            font-size: 15px;
+            color: #ddd;
+        }
+        .key-badge {
+            background: #333;
+            border: 1px solid #55ff55;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+        .weapon-select-container {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            z-index: 12;
+            position: relative;
+        }
+        .weapon-card {
+            background: #222;
+            border: 2px solid #444;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        .weapon-card:hover {
+            border-color: #88ff88;
+            background: #2a2a2a;
+        }
+        .weapon-card.selected {
+            border-color: #55ff55;
+            background: #1b5e20;
+            box-shadow: 0 0 12px rgba(85, 255, 85, 0.6);
+        }
+        .weapon-card h4 {
+            margin: 0 0 4px;
+            color: #fff;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .weapon-card span {
+            font-size: 11px;
+            color: #aaa;
+            pointer-events: none;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            z-index: 12;
+            position: relative;
+        }
+        .main-btn {
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #2e7d32, #4caf50);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1b5e20;
+            transition: transform 0.1s;
+        }
+        .main-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #1b5e20;
+        }
+        .secondary-btn {
+            background: linear-gradient(45deg, #455a64, #263238);
+            box-shadow: 0 5px 0 #111;
+        }
+        #damage-flash {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 0, 0, 0.45);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        #cheat-menu {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 310px;
+            background: rgba(18, 18, 18, 0.95);
+            border: 2px solid #00e676;
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+            display: none;
+        }
+        #cheat-menu h3 {
+            margin: 0 0 10px;
+            color: #00e676;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cheat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        .cheat-toggle {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .cheat-toggle.active {
+            background: #00e676;
+            color: #000;
+        }
+        .cheat-range {
+            width: 110px;
+            accent-color: #00e676;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <canvas id="fpsCanvas" width="800" height="500" tabindex="0"></canvas>
+    <div id="damage-flash"></div>
+
+    <div id="cheat-menu">
+        <h3><span>🛠️ BRUTAL VIP CHEAT</span> <span style="font-size:11px; color:#aaa;">[INSERT]</span></h3>
+        <div class="cheat-item">
+            <span>ESP Line (Garis Musuh)</span>
+            <button class="cheat-toggle" id="btn-esp" onclick="toggleCheat('esp')">OFF</button>
+        </div>
+        <div class="cheat-item">
+            <span>Aimbot (Lock Target)</span>
+            <button class="cheat-toggle" id="btn-aimbot" onclick="toggleCheat('aimbot')">OFF</button>
+        </div>
+        <div class="cheat-item">
+            <span>Silent Aim (Auto-Hit)</span>
+            <button class="cheat-toggle" id="btn-silent" onclick="toggleCheat('silent')">OFF</button>
+        </div>
+        <div class="cheat-item">
+            <span>Auto Fire (Auto Nembak)</span>
+            <button class="cheat-toggle" id="btn-autofire" onclick="toggleCheat('autofire')">OFF</button>
+        </div>
+        <div class="cheat-item">
+            <span>No Reload (Peluru ∞)</span>
+            <button class="cheat-toggle" id="btn-noreload" onclick="toggleCheat('noreload')">OFF</button>
+        </div>
+        <div class="cheat-item">
+            <span>Show FOV (Tampilkan Lingkaran)</span>
+            <button class="cheat-toggle" id="btn-showfov" onclick="toggleCheat('showfov')">OFF</button>
+        </div>
+        <div class="cheat-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <span>Ukuran FOV Radius: <span id="fov-val">130</span>px</span>
+            </div>
+            <input type="range" min="50" max="350" value="130" class="cheat-range" id="fov-slider" oninput="updateFOVSize(this.value)">
+        </div>
+        <div style="font-size: 11px; color: #888; margin-top: 10px; text-align: center;">
+            Tekan <b>INSERT</b> untuk buka/tutup menu.
+        </div>
+    </div>
+
+    <div id="overlay">
+        <h1 id="title-text">🟩 FULL 3D ZOMBIE & WEAPONS</h1>
+        <p>Pilih Senjata Andalanmu:</p>
+        <div class="weapon-select-container">
+            <div class="weapon-card selected" id="card-SG2" onclick="selectWeapon('SG2')">
+                <h4>SG2 M1887</h4>
+                <span>Shotgun (2 Peluru)</span>
+            </div>
+            <div class="weapon-card" id="card-MP40" onclick="selectWeapon('MP40')">
+                <h4>MP40</h4>
+                <span>SMG Bredet</span>
+            </div>
+            <div class="weapon-card" id="card-UMP" onclick="selectWeapon('UMP')">
+                <h4>UMP</h4>
+                <span>SMG Taktis</span>
+            </div>
+            <div class="weapon-card" id="card-M4A1" onclick="selectWeapon('M4A1')">
+                <h4>M4A1-S</h4>
+                <span>Rifle CS2</span>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="main-btn" id="start-btn">▶ MULAI BERMAIN</button>
+            <button class="main-btn secondary-btn" id="redeem-btn">🎁 REDEEM CODE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("fpsCanvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const startBtn = document.getElementById("start-btn");
+    const redeemBtn = document.getElementById("redeem-btn");
+    const titleText = document.getElementById("title-text");
+    const damageFlash = document.getElementById("damage-flash");
+    const cheatMenu = document.getElementById("cheat-menu");
+
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playShootSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = selectedWeaponName === "SG2" ? 'sawtooth' : 'square';
+        osc.frequency.setValueAtTime(selectedWeaponName === "SG2" ? 180 : 320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.2);
+
+        gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    function playReloadSound() {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.setValueAtTime(650, now + 0.15);
+
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(now + 0.35);
+    }
+
+    const cheats = {
+        esp: false,
+        aimbot: false,
+        silent: false,
+        autofire: false,
+        noreload: false,
+        showfov: false,
+        unlocked: false
+    };
+
+    let fovRadius = 130;
+    let selectedWeaponName = "SG2";
+    let isMouseDown = false;
+    let isSpaceDown = false;
+
+    function selectWeapon(wName) {
+        selectedWeaponName = wName;
+        document.querySelectorAll('.weapon-card').forEach(c => c.classList.remove('selected'));
+        let targetCard = document.getElementById(`card-${wName}`);
+        if (targetCard) targetCard.classList.add('selected');
+        initWeaponStats();
+    }
+
+    function initWeaponStats() {
+        if (selectedWeaponName === "SG2") {
+            player.maxAmmo = 2;
+            gun.maxReloadTime = 35;
+            gun.fireRate = 18;
+        } else {
+            player.maxAmmo = 40;
+            gun.maxReloadTime = 25;
+            gun.fireRate = 5;
+        }
+        player.ammo = player.maxAmmo;
+    }
+
+    function toggleCheat(type) {
+        cheats[type] = !cheats[type];
+        let btn = document.getElementById(`btn-${type}`);
+        btn.textContent = cheats[type] ? "ON" : "OFF";
+        btn.className = cheats[type] ? "cheat-toggle active" : "cheat-toggle";
+    }
+
+    function updateFOVSize(val) {
+        fovRadius = parseInt(val);
+        document.getElementById("fov-val").textContent = val;
+    }
+
+    const MAP_SIZE = 16;
+    const worldMap = [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,1,0,0,3,3,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
+        [1,0,0,0,3,0,0,0,0,2,2,0,0,2,0,1],
+        [1,1,0,0,3,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,2,2,0,0,0,0,3,3,0,0,0,1,1],
+        [1,0,0,2,0,0,0,0,0,0,3,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,2,2,0,1],
+        [1,0,3,0,0,0,1,1,0,0,0,0,0,2,0,1],
+        [1,0,3,3,0,0,0,0,0,0,2,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    const player = {
+        x: 3.5, y: 3.5,
+        dir: 0,
+        fov: Math.PI / 3,
+        moveSpeed: 0.065,
+        hp: 100, maxHp: 100,
+        ammo: 2, maxAmmo: 2,
+        score: 0, wave: 1,
+        bobPhase: 0
+    };
+
+    const gun = {
+        recoil: 0,
+        muzzleFlash: 0,
+        reloading: false,
+        reloadTimer: 0,
+        maxReloadTime: 35,
+        fireRate: 18,
+        fireCooldown: 0,
+        hitMarkerTimer: 0,
+        isHeadshot: false
+    };
+
+    let enemies = [];
+    let keys = {};
+    let isPlaying = false;
+    let isPointerLocked = false;
+    let lastMouseX = null;
+    let gameOver = false;
+    const zBuffer = new Array(canvas.width);
+
+    function spawnWave(count) {
+        for (let i = 0; i < count; i++) {
+            let ex, ey;
+            do {
+                ex = Math.floor(Math.random() * (MAP_SIZE - 2)) + 1 + 0.5;
+                ey = Math.floor(Math.random() * (MAP_SIZE - 2)) + 1 + 0.5;
+            } while (worldMap[Math.floor(ey)][Math.floor(ex)] !== 0 || Math.hypot(ex - player.x, ey - player.y) < 4);
+
+            enemies.push({
+                x: ex, y: ey,
+                hp: 100, maxHp: 100,
+                speed: 0.02 + (player.wave * 0.002),
+                hitFlash: 0, alive: true,
+                animWalk: Math.random() * Math.PI * 2,
+                lastDamageText: "", damageTextTimer: 0
+            });
+        }
+    }
+
+    function resetGame() {
+        player.x = 3.5; player.y = 3.5;
+        player.dir = 0;
+        player.hp = 100;
+        initWeaponStats();
+        player.score = 0;
+        player.wave = 1;
+        gun.reloading = false;
+        gun.recoil = 0;
+        enemies = [];
+        gameOver = false;
+        spawnWave(5);
+    }
+
+    window.addEventListener("keydown", (e) => {
+        const k = e.key.toLowerCase();
+        keys[k] = true;
+        keys[e.code] = true;
+
+        if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) {
+            e.preventDefault();
+        }
+        if (e.code === "Space") isSpaceDown = true;
+        if (e.code === "Insert") {
+            if (cheats.unlocked && isPlaying) {
+                cheatMenu.style.display = (cheatMenu.style.display === "block") ? "none" : "block";
+            }
+        }
+        if (isPlaying && !gameOver) {
+            if (k === "r" && !gun.reloading && player.ammo < player.maxAmmo && !cheats.noreload) {
+                startReload();
+            }
+        }
+    });
+
+    window.addEventListener("keyup", (e) => {
+        const k = e.key.toLowerCase();
+        keys[k] = false;
+        keys[e.code] = false;
+        if (e.code === "Space") isSpaceDown = false;
+    });
+
+    function startReload() {
+        if (cheats.noreload && cheats.unlocked) return;
+        gun.reloading = true;
+        gun.reloadTimer = gun.maxReloadTime;
+        playReloadSound();
+    }
+
+    redeemBtn.addEventListener("click", () => {
+        let code = prompt("Masukkan Kode Redeem VIP:");
+        if (code) {
+            code = code.trim().toUpperCase();
+            if (code === "SG2VIP" || code === "EPBEP") {
+                cheats.unlocked = true;
+                alert("🎉 KODE BERHASIL! Menu Brutal VIP Cheat Terbuka.\nTekan tombol [INSERT] untuk membuka/menutup panel cheat.");
+            } else {
+                alert("❌ Kode Redeem Salah atau Kedaluwarsa!");
+            }
+        }
+    });
+
+    startBtn.addEventListener("click", () => {
+        initAudio();
+        if (gameOver) resetGame();
+        isPlaying = true;
+        overlay.style.display = "none";
+        canvas.focus();
+        if (canvas.requestPointerLock) canvas.requestPointerLock();
+    });
+
+    document.addEventListener("pointerlockchange", () => {
+        isPointerLocked = (document.pointerLockElement === canvas);
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isPlaying || gameOver) return;
+        if (isPointerLocked) {
+            player.dir += e.movementX * 0.0028;
+        } else {
+            if (lastMouseX !== null) {
+                let deltaX = e.clientX - lastMouseX;
+                player.dir += deltaX * 0.004;
+            }
+            lastMouseX = e.clientX;
+        }
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+        if (!isPlaying || gameOver) return;
+        canvas.focus();
+        if (!isPointerLocked && canvas.requestPointerLock) canvas.requestPointerLock();
+        if (e.button === 0) isMouseDown = true;
+    });
+
+    window.addEventListener("mouseup", (e) => {
+        if (e.button === 0) isMouseDown = false;
+    });
+
+    function getEnemyInFOV() {
+        const W = canvas.width;
+        let bestTarget = null;
+        let minPixelDist = Infinity;
+
+        for (let en of enemies) {
+            if (!en.alive) continue;
+            let dx = en.x - player.x;
+            let dy = en.y - player.y;
+            let dist = Math.hypot(dx, dy);
+
+            let spriteAngle = Math.atan2(dy, dx) - player.dir;
+            while (spriteAngle < -Math.PI) spriteAngle += Math.PI * 2;
+            while (spriteAngle > Math.PI) spriteAngle -= Math.PI * 2;
+
+            if (Math.abs(spriteAngle) < player.fov / 1.4 && dist > 0.3) {
+                let screenX = (0.5 * (spriteAngle / (player.fov / 2)) + 0.5) * W;
+                let pixelDist = Math.abs(screenX - W / 2);
+
+                if (pixelDist <= fovRadius && pixelDist < minPixelDist) {
+                    minPixelDist = pixelDist;
+                    bestTarget = en;
+                }
+            }
+        }
+        return bestTarget;
+    }
+
+    function getTargetedEnemy() {
+        if (cheats.aimbot && cheats.unlocked) {
+            let fovTarget = getEnemyInFOV();
+            if (fovTarget) return fovTarget;
+        }
+
+        let closestEnemy = null;
+        let minDist = Infinity;
+        for (let en of enemies) {
+            if (!en.alive) continue;
+            let dx = en.x - player.x, dy = en.y - player.y;
+            let dist = Math.hypot(dx, dy);
+            let angleToEnemy = Math.atan2(dy, dx) - player.dir;
+            while (angleToEnemy < -Math.PI) angleToEnemy += Math.PI * 2;
+            while (angleToEnemy > Math.PI) angleToEnemy -= Math.PI * 2;
+
+            let hitAngleTolerance = Math.atan2(0.5, dist);
+            if (Math.abs(angleToEnemy) < hitAngleTolerance && dist < zBuffer[Math.floor(canvas.width / 2)]) {
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestEnemy = en;
+                }
+            }
+        }
+        return closestEnemy;
+    }
+
+    function shootWeapon() {
+        if (gun.fireCooldown > 0) return;
+        if (cheats.noreload && cheats.unlocked) {
+            player.ammo = player.maxAmmo;
+            gun.reloading = false;
+        }
+
+        if (gun.reloading || gun.recoil > 14) return;
+        if (player.ammo <= 0 && !cheats.noreload) {
+            startReload();
+            return;
+        }
+
+        if (!cheats.noreload) player.ammo--;
+        gun.fireCooldown = gun.fireRate;
+        gun.recoil = selectedWeaponName === "SG2" ? 28 : 12;
+        gun.muzzleFlash = 4;
+
+        playShootSound();
+
+        if (cheats.aimbot && cheats.unlocked) {
+            let fovTarget = getEnemyInFOV();
+            if (fovTarget) {
+                player.dir = Math.atan2(fovTarget.y - player.y, fovTarget.x - player.x);
+            }
+        }
+
+        let target = null;
+        if (cheats.silent && cheats.unlocked) {
+            target = getEnemyInFOV();
+        }
+        if (!target) {
+            target = getTargetedEnemy();
+        }
+
+        if (target) {
+            let dist = Math.hypot(target.x - player.x, target.y - player.y);
+            let isRedNumber = cheats.silent || cheats.aimbot || dist < 4.5 || Math.random() < 0.4;
+            let damage = selectedWeaponName === "SG2" ? (isRedNumber ? 120 : 95) : (isRedNumber ? 65 : 35);
+
+            target.hp -= damage;
+            target.hitFlash = 7;
+            target.lastDamageText = isRedNumber ? `💥 ${damage}` : `${damage}`;
+            target.damageTextTimer = 20;
+
+            gun.hitMarkerTimer = 10;
+            gun.isHeadshot = isRedNumber;
+
+            if (target.hp <= 0) {
+                target.alive = false;
+                player.score += isRedNumber ? 150 : 100;
+
+                if (enemies.every(e => !e.alive)) {
+                    player.wave++;
+                    player.hp = Math.min(player.maxHp, player.hp + 30);
+                    spawnWave(4 + player.wave * 2);
+                }
+            }
+        }
+
+        if (player.ammo === 0 && !cheats.noreload) {
+            setTimeout(() => {
+                if (isPlaying && !gameOver && !gun.reloading && player.ammo === 0) {
+                    startReload();
+                }
+            }, 180);
+        }
+    }
+
+    function canWalk(nx, ny) {
+        const margin = 0.2;
+        const minX = Math.floor(nx - margin), maxX = Math.floor(nx + margin);
+        const minY = Math.floor(ny - margin), maxY = Math.floor(ny + margin);
+        if (minY < 0 || maxY >= MAP_SIZE || minX < 0 || maxX >= MAP_SIZE) return false;
+        return worldMap[minY][minX] === 0 && worldMap[minY][maxX] === 0 && worldMap[maxY][minX] === 0 && worldMap[maxY][maxX] === 0;
+    }
+
+    function update() {
+        if (!isPlaying || gameOver) return;
+
+        if (gun.fireCooldown > 0) gun.fireCooldown--;
+
+        if (isMouseDown || isSpaceDown || (cheats.autofire && cheats.unlocked && getEnemyInFOV())) {
+            shootWeapon();
+        }
+
+        if (cheats.noreload && cheats.unlocked) {
+            player.ammo = player.maxAmmo;
+            gun.reloading = false;
+        }
+
+        let moveX = 0, moveY = 0;
+        const cos = Math.cos(player.dir), sin = Math.sin(player.dir);
+
+        if (keys["w"] || keys["KeyW"] || keys["arrowup"] || keys["ArrowUp"]) { moveX += cos * player.moveSpeed; moveY += sin * player.moveSpeed; }
+        if (keys["s"] || keys["KeyS"] || keys["arrowdown"] || keys["ArrowDown"]) { moveX -= cos * player.moveSpeed; moveY -= sin * player.moveSpeed; }
+        if (keys["a"] || keys["KeyA"]) { moveX += sin * player.moveSpeed; moveY -= cos * player.moveSpeed; }
+        if (keys["d"] || keys["KeyD"]) { moveX -= sin * player.moveSpeed; moveY += cos * player.moveSpeed; }
+        if (keys["q"] || keys["KeyQ"] || keys["arrowleft"] || keys["ArrowLeft"]) player.dir -= 0.045;
+        if (keys["e"] || keys["KeyE"] || keys["arrowright"] || keys["ArrowRight"]) player.dir += 0.045;
+
+        if (canWalk(player.x + moveX, player.y)) player.x += moveX;
+        if (canWalk(player.x, player.y + moveY)) player.y += moveY;
+
+        if (Math.hypot(moveX, moveY) > 0.001) player.bobPhase += 0.22;
+
+        if (gun.recoil > 0) gun.recoil *= 0.78;
+        if (gun.muzzleFlash > 0) gun.muzzleFlash--;
+        if (gun.hitMarkerTimer > 0) gun.hitMarkerTimer--;
+
+        if (gun.reloading && !cheats.noreload) {
+            gun.reloadTimer--;
+            if (gun.reloadTimer <= 0) { player.ammo = player.maxAmmo; gun.reloading = false; }
+        }
+
+        for (let en of enemies) {
+            if (!en.alive) continue;
+            if (en.hitFlash > 0) en.hitFlash--;
+            if (en.damageTextTimer > 0) en.damageTextTimer--;
+            en.animWalk += 0.18;
+
+            let dx = player.x - en.x, dy = player.y - en.y;
+            let dist = Math.hypot(dx, dy);
+
+            if (dist > 0.6) {
+                let stepX = (dx / dist) * en.speed, stepY = (dy / dist) * en.speed;
+                if (worldMap[Math.floor(en.y)][Math.floor(en.x + stepX)] === 0) en.x += stepX;
+                if (worldMap[Math.floor(en.y + stepY)][Math.floor(en.x)] === 0) en.y += stepY;
+            } else {
+                player.hp -= 0.4;
+                damageFlash.style.opacity = "1";
+                setTimeout(() => { damageFlash.style.opacity = "0"; }, 100);
+
+                if (player.hp <= 0) {
+                    player.hp = 0; gameOver = true; isPlaying = false;
+                    cheatMenu.style.display = "none";
+                    if (document.pointerLockElement === canvas) document.exitPointerLock();
+                    titleText.textContent = "💀 GAME OVER (SKOR: " + player.score + ")";
+                    startBtn.textContent = "🔄 MAIN LAGI";
+                    overlay.style.display = "flex";
+                }
+            }
+        }
+    }
+
+    // --- RENDER 3D RAYCASTER GEOMETRI UNTUK LINGKUNGAN ---
+    function render3D() {
+        const W = canvas.width, H = canvas.height;
+
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, H / 2);
+        skyGrad.addColorStop(0, "#7887ff"); skyGrad.addColorStop(1, "#b1c5ff");
+        ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H / 2);
+
+        let floorGrad = ctx.createLinearGradient(0, H / 2, 0, H);
+        floorGrad.addColorStop(0, "#595959"); floorGrad.addColorStop(1, "#3b3b3b");
+        ctx.fillStyle = floorGrad; ctx.fillRect(0, H / 2, W, H / 2);
+
+        for (let x = 0; x < W; x += 2) {
+            let rayAngle = (player.dir - player.fov / 2) + (x / W) * player.fov;
+            let rayDirX = Math.cos(rayAngle), rayDirY = Math.sin(rayAngle);
+
+            let mapX = Math.floor(player.x), mapY = Math.floor(player.y);
+            let deltaDistX = Math.abs(1 / (rayDirX || 0.00001)), deltaDistY = Math.abs(1 / (rayDirY || 0.00001));
+            let stepX, sideDistX, stepY, sideDistY;
+
+            if (rayDirX < 0) { stepX = -1; sideDistX = (player.x - mapX) * deltaDistX; }
+            else { stepX = 1; sideDistX = (mapX + 1.0 - player.x) * deltaDistX; }
+            if (rayDirY < 0) { stepY = -1; sideDistY = (player.y - mapY) * deltaDistY; }
+            else { stepY = 1; sideDistY = (mapY + 1.0 - player.y) * deltaDistY; }
+
+            let hit = 0, side = 0;
+            while (hit === 0) {
+                if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
+                else { sideDistY += deltaDistY; mapY += stepY; side = 1; }
+                if (worldMap[mapY] && worldMap[mapY][mapX] > 0) hit = worldMap[mapY][mapX];
+            }
+
+            let perpWallDist = (side === 0) ? (mapX - player.x + (1 - stepX) / 2) / rayDirX : (mapY - player.y + (1 - stepY) / 2) / rayDirY;
+            let correctedDist = perpWallDist * Math.cos(rayAngle - player.dir);
+            zBuffer[x] = correctedDist; zBuffer[x + 1] = correctedDist;
+
+            let lineHeight = Math.floor(H / Math.max(0.1, correctedDist));
+            let drawStart = Math.floor(-lineHeight / 2 + H / 2);
+
+            let baseR = 120, baseG = 120, baseB = 120;
+            if (hit === 2) { baseR = 143; baseG = 89; baseB = 53; }
+            if (hit === 3) { baseR = 80; baseG = 80; baseB = 80; }
+
+            let shade = Math.min(1, 3.5 / Math.max(1, correctedDist));
+            if (side === 1) shade *= 0.75;
+
+            ctx.fillStyle = `rgb(${Math.floor(baseR * shade)}, ${Math.floor(baseG * shade)}, ${Math.floor(baseB * shade)})`;
+            ctx.fillRect(x, drawStart, 2, lineHeight);
+        }
+
+        // --- RENDER 3D ZOMBIE MENGGUNAKAN POLIGON GEOMETRI ---
+        let sortedEnemies = enemies
+            .filter(e => e.alive)
+            .map(e => ({ ...e, dist: Math.hypot(e.x - player.x, e.y - player.y) }))
+            .sort((a, b) => b.dist - a.dist);
+
+        for (let en of sortedEnemies) {
+            let dx = en.x - player.x, dy = en.y - player.y;
+            let spriteAngle = Math.atan2(dy, dx) - player.dir;
+            while (spriteAngle < -Math.PI) spriteAngle += Math.PI * 2;
+            while (spriteAngle > Math.PI) spriteAngle -= Math.PI * 2;
+
+            if (Math.abs(spriteAngle) < player.fov / 1.4 && en.dist > 0.3) {
+                let screenX = (0.5 * (spriteAngle / (player.fov / 2)) + 0.5) * W;
+                let spriteHeight = Math.abs(Math.floor(H / en.dist));
+                let spriteWidth = spriteHeight * 0.5;
+                let topY = H / 2 - spriteHeight / 2;
+                let centerX = screenX;
+
+                let bobOffset = Math.sin(en.animWalk) * (spriteHeight * 0.04);
+                let baseZ = en.dist;
+
+                // Cek depth buffer agar zombie tertutup dinding jika berada di belakang tembok
+                let midCol = Math.floor(centerX);
+                if (midCol >= 0 && midCol < W && baseZ < zBuffer[midCol]) {
+                    let skinColor = en.hitFlash > 0 ? "#ffffff" : "#2e7d32";
+                    let shirtColor = en.hitFlash > 0 ? "#ffeb3b" : "#1b5e20";
+                    let pantsColor = en.hitFlash > 0 ? "#ffeb3b" : "#0d47a1";
+
+                    // 1. Kaki 3D
+                    let legW = spriteWidth * 0.25;
+                    let legH = spriteHeight * 0.35;
+                    let swing = Math.sin(en.animWalk) * (spriteHeight * 0.08);
+
+                    ctx.fillStyle = pantsColor;
+                    ctx.fillRect(centerX - spriteWidth * 0.3, topY + spriteHeight * 0.65 - swing, legW, legH);
+                    ctx.fillRect(centerX + spriteWidth * 0.05, topY + spriteHeight * 0.65 + swing, legW, legH);
+
+                    // 2. Badan / Torso 3D
+                    let torsoW = spriteWidth * 0.6;
+                    let torsoH = spriteHeight * 0.4;
+                    ctx.fillStyle = shirtColor;
+                    ctx.fillRect(centerX - torsoW / 2, topY + spriteHeight * 0.25 + bobOffset, torsoW, torsoH);
+
+                    // 3. Kepala 3D Kotak
+                    let headSz = spriteWidth * 0.45;
+                    ctx.fillStyle = skinColor;
+                    ctx.fillRect(centerX - headSz / 2, topY + spriteHeight * 0.02 + bobOffset, headSz, headSz);
+
+                    // Mata Merah Menyala 3D
+                    ctx.fillStyle = "#ff1744";
+                    ctx.fillRect(centerX - headSz * 0.25, topY + spriteHeight * 0.1 + bobOffset, 3, 3);
+                    ctx.fillRect(centerX + headSz * 0.05, topY + spriteHeight * 0.1 + bobOffset, 3, 3);
+
+                    // 4. Tangan Khas Zombie 3D (Terentang ke Depan)
+                    let armW = spriteWidth * 0.22;
+                    let armH = spriteHeight * 0.35;
+                    ctx.fillStyle = skinColor;
+                    ctx.fillRect(centerX - spriteWidth * 0.45, topY + spriteHeight * 0.28 + bobOffset, armW, armH);
+                    ctx.fillRect(centerX + spriteWidth * 0.23, topY + spriteHeight * 0.28 + bobOffset, armW, armH);
+
+                    // Bar HP di atas kepala zombie 3D
+                    let hpBarW = Math.max(30, spriteWidth * 0.8);
+                    ctx.fillStyle = "rgba(0,0,0,0.7)";
+                    ctx.fillRect(centerX - hpBarW / 2, topY + bobOffset - 15, hpBarW, 6);
+                    ctx.fillStyle = "#55ff55";
+                    ctx.fillRect(centerX - hpBarW / 2, topY + bobOffset - 15, hpBarW * (en.hp / en.maxHp), 6);
+
+                    if (en.damageTextTimer > 0) {
+                        ctx.fillStyle = "#ffeb3b";
+                        ctx.font = "bold 18px Impact, Arial";
+                        ctx.fillText(en.lastDamageText, centerX - 25, topY + bobOffset - 25);
+                    }
+                }
+            }
+
+            if (cheats.esp && cheats.unlocked && en.alive) {
+                if (Math.abs(spriteAngle) < player.fov / 1.4) {
+                    let screenX = (0.5 * (spriteAngle / (player.fov / 2)) + 0.5) * W;
+                    let spriteHeight = Math.abs(Math.floor(H / en.dist));
+                    let topY = H / 2 - spriteHeight / 2;
+
+                    ctx.strokeStyle = "#55ff55";
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(W / 2, H);
+                    ctx.lineTo(screenX, topY);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    // --- RENDER 3D POLIGON UNTUK SENJATA TANGAN (CS2 STYLE) ---
+    function render3DWeapon() {
+        const W = canvas.width, H = canvas.height;
+        let bobX = Math.cos(player.bobPhase) * 7, bobY = Math.abs(Math.sin(player.bobPhase)) * 6;
+
+        ctx.save();
+        let baseX = W / 2 + 120 + bobX, baseY = H - 30 + bobY + gun.recoil * 2.5;
+        ctx.translate(baseX, baseY);
+
+        if (gun.reloading && !cheats.noreload) {
+            let progress = 1 - (gun.reloadTimer / gun.maxReloadTime);
+            let rotAngle = Math.sin(progress * Math.PI) * 0.7;
+            ctx.rotate(rotAngle);
+            ctx.translate(0, Math.sin(progress * Math.PI) * 30);
+        } else if (gun.recoil > 1) {
+            ctx.rotate(-gun.recoil * 0.02);
+        }
+
+        if (gun.muzzleFlash > 0) {
+            let flashGrad = ctx.createRadialGradient(-40, -160, 5, -40, -160, 60);
+            flashGrad.addColorStop(0, "#ffffff");
+            flashGrad.addColorStop(0.5, "#ffeb3b");
+            flashGrad.addColorStop(1, "rgba(255, 87, 34, 0)");
+            ctx.fillStyle = flashGrad;
+            ctx.beginPath(); ctx.arc(-40, -160, 60, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Tangan Karakter 3D Poligon Voxel
+        ctx.fillStyle = "#37474f";
+        ctx.fillRect(10, 5, 40, 65);
+        ctx.strokeStyle = "#111"; ctx.lineWidth = 2; ctx.strokeRect(10, 5, 40, 65);
+
+        // Bodi Geometri 3D Senjata Sesuai Pilihan
+        if (selectedWeaponName === "SG2") {
+            // SG2 M1887 Double Barrel 3D
+            ctx.fillStyle = "#5c2802";
+            ctx.beginPath(); ctx.moveTo(-25, -15); ctx.lineTo(25, -25); ctx.lineTo(60, 85); ctx.lineTo(-10, 95); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = "#263238";
+            ctx.fillRect(-45, -60, 60, 55);
+            ctx.fillStyle = "#90a4ae";
+            ctx.fillRect(-55, -160, 18, 90);
+            ctx.fillRect(-30, -160, 18, 90);
+        } else if (selectedWeaponName === "MP40") {
+            ctx.fillStyle = "#212121";
+            ctx.fillRect(-25, -60, 35, 95);
+            ctx.fillStyle = "#37474f";
+            ctx.fillRect(-20, -140, 16, 85);
+            ctx.fillStyle = "#424242";
+            ctx.fillRect(-40, -30, 16, 50);
+            ctx.fillStyle = "#78909c";
+            ctx.fillRect(-28, 35, 50, 18);
+        } else if (selectedWeaponName === "UMP") {
+            ctx.fillStyle = "#111";
+            ctx.fillRect(-28, -70, 38, 90);
+            ctx.fillStyle = "#263238";
+            ctx.fillRect(-20, -135, 16, 75);
+            ctx.fillStyle = "#212121";
+            ctx.fillRect(-14, -25, 18, 60);
+            ctx.fillStyle = "#cfd8dc";
+            ctx.fillRect(-6, -60, 28, 10);
+        } else if (selectedWeaponName === "M4A1") {
+            ctx.fillStyle = "#263238";
+            ctx.fillRect(-28, -80, 36, 105);
+            ctx.fillStyle = "#37474f";
+            ctx.fillRect(-19, -170, 14, 95);
+            ctx.fillStyle = "#111";
+            ctx.fillRect(-12, -30, 16, 60);
+            ctx.fillStyle = "#546e7a";
+            ctx.fillRect(-22, 25, 50, 35);
+        }
+
+        ctx.restore();
+    }
+
+    function renderHUD() {
+        const W = canvas.width, H = canvas.height;
+
+        if (cheats.showfov && cheats.unlocked) {
+            ctx.strokeStyle = "rgba(85, 255, 85, 0.6)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(W / 2, H / 2, fovRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        let isTargetingEnemy = getTargetedEnemy() !== null;
+        let crosshairColor = isTargetingEnemy ? "#ff1744" : "rgba(255, 255, 255, 0.85)";
+
+        ctx.strokeStyle = crosshairColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(W / 2, H / 2, 16 + gun.recoil * 0.3, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = crosshairColor;
+        ctx.beginPath(); ctx.arc(W / 2, H / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+
+        if (gun.hitMarkerTimer > 0) {
+            ctx.strokeStyle = gun.isHeadshot ? "#ff1744" : "#ffeb3b";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(W / 2 - 12, H / 2 - 12); ctx.lineTo(W / 2 - 4, H / 2 - 4);
+            ctx.moveTo(W / 2 + 12, H / 2 - 12); ctx.lineTo(W / 2 + 4, H / 2 - 4);
+            ctx.moveTo(W / 2 - 12, H / 2 + 12); ctx.lineTo(W / 2 - 4, H / 2 + 4);
+            ctx.moveTo(W / 2 + 12, H / 2 + 12); ctx.lineTo(W / 2 + 4, H / 2 + 4);
+            ctx.stroke();
+        }
+
+        render3DWeapon();
+
+        const mapScale = 7, offsetX = 12, offsetY = 12;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(offsetX, offsetY, MAP_SIZE * mapScale, MAP_SIZE * mapScale);
+
+        for (let ry = 0; ry < MAP_SIZE; ry++) {
+            for (let rx = 0; rx < MAP_SIZE; rx++) {
+                if (worldMap[ry][rx] > 0) {
+                    ctx.fillStyle = "#8d6e63";
+                    ctx.fillRect(offsetX + rx * mapScale, offsetY + ry * mapScale, mapScale - 1, mapScale - 1);
+                }
+            }
+        }
+        for (let en of enemies) {
+            if (!en.alive) continue;
+            ctx.fillStyle = "#2e7d32";
+            ctx.fillRect(offsetX + en.x * mapScale - 2, offsetY + en.y * mapScale - 2, 4, 4);
+        }
+        ctx.fillStyle = "#55ff55";
+        ctx.beginPath(); ctx.arc(offsetX + player.x * mapScale, offsetY + player.y * mapScale, 3, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(12, H - 54, 235, 42);
+        ctx.fillStyle = "#55ff55";
+        ctx.fillRect(18, H - 46, Math.max(0, (player.hp / player.maxHp) * 140), 26);
+        ctx.strokeStyle = "#fff"; ctx.strokeRect(18, H - 46, 140, 26);
+
+        ctx.fillStyle = "#fff"; ctx.font = "bold 16px Segoe UI";
+        ctx.fillText(`HP: ${Math.ceil(player.hp)}`, 168, H - 28);
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.78)";
+        ctx.fillRect(W - 275, H - 62, 263, 50);
+        ctx.strokeStyle = "#55ff55"; ctx.lineWidth = 2; ctx.strokeRect(W - 275, H - 62, 263, 50);
+
+        ctx.fillStyle = "#55ff55"; ctx.font = "bold 14px Segoe UI";
+        ctx.fillText(`🔫 ${selectedWeaponName} (FULL-AUTO)`, W - 262, H - 40);
+
+        ctx.fillStyle = (gun.reloading && !cheats.noreload) ? "#ffeb3b" : "#fff"; ctx.font = "bold 18px Segoe UI";
+        ctx.fillText((gun.reloading && !cheats.noreload) ? "RELOADING..." : `PELURU: ${player.ammo} / ${player.maxAmmo}`, W - 262, H - 19);
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+        ctx.fillRect(W - 275, 10, 263, 34);
+        ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 17px Segoe UI";
+        ctx.fillText(`🏆 SKOR: ${player.score}  |  🔥 WAVE: ${player.wave}`, W - 262, 33);
+    }
+
+    function gameLoop() {
+        update();
+        render3D();
+        renderHUD();
+        requestAnimationFrame(gameLoop);
+    }
+
+    initWeaponStats();
+    resetGame();
+    gameLoop();
+</script>
+</body>
+</html>
